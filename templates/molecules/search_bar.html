@@ -1,0 +1,5 @@
+{% comment %}params: name, value, placeholder, label{% endcomment %}
+<div class="field">
+  <label class="form-label" for="f-{{ name }}">{{ label }}</label>
+  <input class="form-control mono" type="search" id="f-{{ name }}" name="{{ name }}" value="{{ value }}" placeholder="{{ placeholder }}" autocomplete="off" autocapitalize="characters">
+</div>

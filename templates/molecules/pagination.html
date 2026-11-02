@@ -1,0 +1,20 @@
+{% comment %}params: page (Page DTO), querystring{% endcomment %}
+{% if page.num_pages > 1 %}
+<nav aria-label="Paginación del histórico">
+  <ul class="pagination justify-content-center">
+    <li class="page-item{% if not page.has_prev %} disabled{% endif %}">
+      <a class="page-link px-3" {% if page.has_prev %}href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.number|add:'-1' }}"{% else %}aria-disabled="true" tabindex="-1"{% endif %}>Anterior</a>
+    </li>
+    {% for p in page.page_range %}
+      {% if p %}
+        <li class="page-item{% if p == page.number %} active{% endif %}"{% if p == page.number %} aria-current="page"{% endif %}><a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ p }}">{{ p }}</a></li>
+      {% else %}
+        <li class="page-item disabled" aria-hidden="true"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item{% if not page.has_next %} disabled{% endif %}">
+      <a class="page-link px-3" {% if page.has_next %}href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.number|add:'1' }}"{% else %}aria-disabled="true" tabindex="-1"{% endif %}>Siguiente</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}

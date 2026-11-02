@@ -1,0 +1,28 @@
+{% extends "layouts/app_layout.html" %}
+{% load static %}
+{% block title %}Nuevo ingreso{% endblock %}
+{% block content %}
+  <div class="mx-auto" style="max-width: 800px;">
+    <div class="page-head">
+      <div>
+        <h1>Registro de ingreso</h1>
+        <p class="page-sub">{% now "d/m/Y" %}</p>
+      </div>
+    </div>
+
+    {% if setup_error %}
+      <div class="panel empty">
+        <h2>El formulario aún no está configurado</h2>
+        <p>{{ setup_error }}</p>
+        {% if role_is_admin %}<a class="btn btn-primary" href="/admin/questionnaire/questionnaire/">Configurar cuestionario</a>{% endif %}
+      </div>
+    {% else %}
+      {% include "organisms/dynamic_form.html" %}
+    {% endif %}
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'js/photo-capture.js' %}"></script>
+  <script src="{% static 'js/dynamic-form.js' %}"></script>
+  <script src="{% static 'js/ocr-capture.js' %}"></script>
+{% endblock %}

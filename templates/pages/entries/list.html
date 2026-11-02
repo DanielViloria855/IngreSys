@@ -1,0 +1,34 @@
+{% extends "layouts/app_layout.html" %}
+{% block title %}Histórico{% endblock %}
+{% block content %}
+  {% url 'entries:create' as create_url %}
+  {% url 'entries:list' as list_url %}
+  <div class="page-head">
+    <div>
+      <h1>Histórico de ingresos</h1>
+      <p class="page-sub">{% if can_filter_users %}Todos los registros{% else %}Sus registros{% endif %}</p>
+    </div>
+    <div class="page-actions">
+      {% if can_review %}<a class="btn btn-outline-primary" href="{{ export_href }}">Exportar CSV</a>{% endif %}
+      <a class="btn btn-primary" href="{{ create_url }}">Nuevo ingreso</a>
+    </div>
+  </div>
+
+  {% include "organisms/entries_filters.html" %}
+
+  <section class="panel mt-3" aria-label="Resultados">
+    {% if page.items %}
+      <div class="panel-head">
+        <p class="panel-sub" role="status"><strong class="text-body">{{ page.total }}</strong> registro{{ page.total|pluralize }} · página {{ page.number }} de {{ page.num_pages }}</p>
+      </div>
+      {% include "organisms/entries_table.html" %}
+      <div class="panel-body">{% include "molecules/pagination.html" %}</div>
+    {% else %}
+      <div class="empty">
+        <h2>{% if has_filters %}Ningún registro coincide con los filtros{% else %}Aún no hay ingresos registrados{% endif %}</h2>
+        <p>{% if has_filters %}Amplíe el rango de fechas o limpie los filtros.{% else %}Los ingresos aparecerán aquí cuando se registren.{% endif %}</p>
+        {% if has_filters %}<a class="btn btn-outline-primary" href="{{ list_url }}">Limpiar filtros</a>{% else %}<a class="btn btn-primary" href="{{ create_url }}">Registrar ingreso</a>{% endif %}
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

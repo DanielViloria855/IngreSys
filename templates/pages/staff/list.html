@@ -1,0 +1,13 @@
+{% extends "layouts/app_layout.html" %}
+{% block title %}Personal{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Personal</h1>
+      <p class="page-sub">Usuarios y roles del sistema</p>
+    </div>
+    <div class="page-actions"><a class="btn btn-primary" href="{% url 'staff:create' %}">Nuevo empleado</a></div>
+  </div>
+  <section class="panel">{% include "organisms/staff_table.html" %}</section>
+  <p class="text-muted small mt-3">Los usuarios no se eliminan: se desactivan para conservar el historial de ingresos.</p>
+{% endblock %}

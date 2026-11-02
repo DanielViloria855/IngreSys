@@ -1,0 +1,19 @@
+{% comment %}Selección única (opciones o lista) o múltiple. params: f (FieldVM){% endcomment %}
+<fieldset class="field">
+  <legend class="form-label">{{ f.text }}{% if f.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</legend>
+  {% if f.type == "single_choice" and f.choices|length > 6 %}
+    <select class="form-select" name="{{ f.name }}" id="{{ f.name }}"{% if f.required %} required{% endif %} aria-label="{{ f.text }}">
+      <option value="">Seleccione…</option>
+      {% for c in f.choices %}<option value="{{ c.value }}"{% if c.selected %} selected{% endif %}>{{ c.label }}</option>{% endfor %}
+    </select>
+  {% else %}
+    <div class="chips" role="{% if f.type == 'multi_choice' %}group{% else %}radiogroup{% endif %}" aria-label="{{ f.text }}">
+      {% for c in f.choices %}
+        <input class="btn-check" type="{% if f.type == 'multi_choice' %}checkbox{% else %}radio{% endif %}" name="{{ f.name }}" id="{{ f.name }}-{{ forloop.counter }}" value="{{ c.value }}" autocomplete="off"{% if c.selected %} checked{% endif %}{% if f.required and f.type == 'single_choice' %} required{% endif %}>
+        <label class="chip" for="{{ f.name }}-{{ forloop.counter }}">{{ c.label }}</label>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if f.help_text %}<div class="field-help">{{ f.help_text }}</div>{% endif %}
+  {% if f.error %}<div class="field-error" role="alert">{{ f.error }}</div>{% endif %}
+</fieldset>

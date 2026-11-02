@@ -1,0 +1,24 @@
+{% comment %}Foto + lectura automática + campo editable + estado. params: f (FieldVM con ocr_kind plate|container){% endcomment %}
+<fieldset class="field" data-ocr data-ocr-kind="{{ f.ocr_kind }}" data-ocr-url="{{ f.ocr_url }}">
+  <legend class="form-label">{{ f.text }}{% if f.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</legend>
+  <div class="ocr-grid">
+    <div>{% include "molecules/photo_capture.html" with id=f.photo_name name=f.photo_name cta="Tomar foto" %}</div>
+    <div class="ocr-read">
+      <button type="button" class="btn btn-outline-primary" data-ocr-button disabled>Leer con IA</button>
+      <label class="form-label mb-0" for="{{ f.name }}">{% if f.ocr_kind == "plate" %}Placa{% else %}Código de contenedor{% endif %} <span class="text-muted fw-normal">(editable)</span></label>
+      <input class="code-input" type="text" id="{{ f.name }}" name="{{ f.name }}" value="{{ f.value }}"
+             placeholder="{% if f.ocr_kind == 'plate' %}ABC123{% else %}CSQU3054383{% endif %}" maxlength="16"
+             autocapitalize="characters" autocomplete="off" spellcheck="false" data-ocr-text{% if f.required %} required{% endif %}
+             {% if f.error %}aria-invalid="true" aria-describedby="{{ f.name }}-error"{% endif %}>
+      <div class="ocr-status" data-ocr-status role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  {% if f.ocr_kind == "container" %}
+    <div class="ocr-confirm" data-ocr-confirm{% if not f.show_confirm %} hidden{% endif %}>
+      <input class="form-check-input" type="checkbox" id="confirm_iso" name="confirm_iso" value="1"{% if f.confirm_checked %} checked{% endif %}>
+      <label class="form-check-label" for="confirm_iso"><strong>El dígito de control no coincide.</strong> Confirmo que el código corresponde al contenedor; registrar con observación.</label>
+    </div>
+  {% endif %}
+  {% if f.help_text %}<div class="field-help">{{ f.help_text }}</div>{% endif %}
+  {% if f.error %}<div class="field-error" id="{{ f.name }}-error" role="alert">{{ f.error }}</div>{% endif %}
+</fieldset>

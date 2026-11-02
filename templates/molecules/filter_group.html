@@ -1,0 +1,7 @@
+{% comment %}Select de filtro. params: name, label, options (lista de (valor, etiqueta)), current{% endcomment %}
+<div class="field">
+  <label class="form-label" for="f-{{ name }}">{{ label }}</label>
+  <select class="form-select" id="f-{{ name }}" name="{{ name }}">
+    {% for value, text in options %}<option value="{{ value }}"{% if value == current %} selected{% endif %}>{{ text }}</option>{% endfor %}
+  </select>
+</div>

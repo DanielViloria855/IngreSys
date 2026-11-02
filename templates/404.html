@@ -1,0 +1,9 @@
+{% extends "layouts/app_layout.html" %}
+{% block title %}No encontrado{% endblock %}
+{% block content %}
+  <div class="panel empty mx-auto" style="max-width: 560px;">
+    <h2>Página no encontrada</h2>
+    <p>El registro o la página solicitada no existe o ya no está disponible.</p>
+    <a class="btn btn-primary" href="{% url 'home' %}">Volver al inicio</a>
+  </div>
+{% endblock %}

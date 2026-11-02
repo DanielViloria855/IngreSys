@@ -1,0 +1,32 @@
+{% load ui %}{% comment %}params: page (Page de EntrySummaryDTO){% endcomment %}
+<div class="table-wrap">
+  <table class="table table-ingre align-middle">
+    <caption class="visually-hidden">Histórico de ingresos de camiones</caption>
+    <thead>
+      <tr>
+        <th scope="col">Fecha y hora</th>
+        <th scope="col">Placa</th>
+        <th scope="col">Contenedor</th>
+        <th scope="col">ISO 6346</th>
+        <th scope="col" class="d-none d-lg-table-cell">Proveedor</th>
+        <th scope="col" class="d-none d-lg-table-cell">Registrado por</th>
+        <th scope="col">Estado</th>
+        <th scope="col" class="d-none d-md-table-cell">Novedad</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in page.items %}
+        <tr class="row-link">
+          <td class="text-nowrap">{{ e.created_at|date:"d/m/Y H:i" }}</td>
+          <td><a class="stretched-link plate" href="{% url 'entries:detail' e.id %}" aria-label="Abrir ingreso {{ e.id }}, placa {{ e.plate }}">{{ e.plate }}</a></td>
+          <td>{% if e.container_code %}<span class="cont">{{ e.container_code }}</span>{% else %}<span class="text-muted">Sin contenedor</span>{% endif %}</td>
+          <td>{% if e.container_iso_valid is None %}<span class="text-muted">—</span>{% elif e.container_iso_valid %}<span class="iso-ok">Válido</span>{% else %}<span class="iso-bad">Inválido</span>{% endif %}</td>
+          <td class="d-none d-lg-table-cell">{{ e.supplier }}</td>
+          <td class="d-none d-lg-table-cell">{{ e.created_by_name }}</td>
+          <td>{% include "molecules/status_badge.html" with status=e.status label=e.status_label variant=e.status_variant %}</td>
+          <td class="d-none d-md-table-cell">{% if e.has_novelty %}{% include "atoms/badge.html" with text="Con novedad" variant="warning" %}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

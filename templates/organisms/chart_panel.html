@@ -1,0 +1,13 @@
+{% comment %}params: chart_id, title, subtitle, tall{% endcomment %}
+<section class="panel chart-panel h-100" aria-labelledby="{{ chart_id }}-title">
+  <div class="panel-head">
+    <div>
+      <h2 id="{{ chart_id }}-title">{{ title }}</h2>
+      <p class="chart-summary" data-chart-summary="{{ chart_id }}">{{ subtitle }}</p>
+    </div>
+  </div>
+  <div class="chart-box{% if tall %} chart-box--tall{% endif %}">
+    <canvas id="{{ chart_id }}" role="img" aria-label="{{ title }}"></canvas>
+    <div class="chart-empty" data-chart-empty="{{ chart_id }}" hidden>Sin datos en este periodo</div>
+  </div>
+</section>

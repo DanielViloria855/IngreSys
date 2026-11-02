@@ -1,0 +1,14 @@
+{% comment %}params: filters, status_options, novelty_options, user_options, can_filter_users, has_filters{% endcomment %}
+<form method="get" class="panel filters" aria-label="Filtros del histórico">
+  <div class="field"><label class="form-label" for="f-date_from">Desde</label><input class="form-control" type="date" id="f-date_from" name="date_from" value="{{ filters.date_from }}"></div>
+  <div class="field"><label class="form-label" for="f-date_to">Hasta</label><input class="form-control" type="date" id="f-date_to" name="date_to" value="{{ filters.date_to }}"></div>
+  {% include "molecules/search_bar.html" with name="plate" label="Placa" value=filters.plate placeholder="ABC123" %}
+  {% include "molecules/search_bar.html" with name="container" label="Contenedor" value=filters.container placeholder="CSQU3054383" %}
+  {% include "molecules/filter_group.html" with name="status" label="Estado" options=status_options current=filters.status %}
+  {% include "molecules/filter_group.html" with name="novelty" label="Novedad" options=novelty_options current=filters.novelty %}
+  {% if can_filter_users %}{% include "molecules/filter_group.html" with name="user" label="Registrado por" options=user_options current=filters.user %}{% endif %}
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    {% if has_filters %}<a class="btn btn-ghost" href="{% url 'entries:list' %}">Limpiar</a>{% endif %}
+  </div>
+</form>

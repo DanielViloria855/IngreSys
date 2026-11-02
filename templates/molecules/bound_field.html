@@ -1,0 +1,14 @@
+{% comment %}Renderiza un BoundField de Django. params: bf{% endcomment %}
+<div class="field">
+  {% if bf.field.widget.input_type == "checkbox" %}
+    <div class="form-check d-flex align-items-center gap-2 ps-0">
+      {{ bf }}
+      <label class="form-check-label" for="{{ bf.id_for_label }}">{{ bf.label }}</label>
+    </div>
+  {% else %}
+    <label for="{{ bf.id_for_label }}" class="form-label">{{ bf.label }}{% if bf.field.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</label>
+    {{ bf }}
+  {% endif %}
+  {% if bf.help_text %}<div class="field-help">{{ bf.help_text }}</div>{% endif %}
+  {% for error in bf.errors %}<div class="field-error" role="alert">{{ error }}</div>{% endfor %}
+</div>

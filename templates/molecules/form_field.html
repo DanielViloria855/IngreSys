@@ -1,0 +1,7 @@
+{% comment %}Etiqueta + input + ayuda + error. params: id, name, label, type, value, required, help, error, placeholder, inputmode, autocomplete, min, step{% endcomment %}
+<div class="field">
+  {% include "atoms/label.html" with for=id text=label required=required %}
+  {% include "atoms/input.html" with id=id name=name type=type value=value required=required help=help error=error placeholder=placeholder inputmode=inputmode autocomplete=autocomplete min=min step=step %}
+  {% if help %}<div class="field-help" id="{{ id }}-help">{{ help }}</div>{% endif %}
+  {% if error %}<div class="field-error" id="{{ id }}-error" role="alert">{{ error }}</div>{% endif %}
+</div>

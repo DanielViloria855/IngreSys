@@ -1,0 +1,5 @@
+{% comment %}params: level (success|warning|error|info), text{% endcomment %}
+<div class="alert alert-{% if level == 'error' %}danger{% elif level == 'debug' %}secondary{% else %}{{ level }}{% endif %} alert-dismissible fade show" role="{% if level == 'error' or level == 'warning' %}alert{% else %}status{% endif %}">
+  {{ text }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar aviso"></button>
+</div>

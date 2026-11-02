@@ -1,0 +1,12 @@
+{% comment %}Sí / No. params: f (FieldVM){% endcomment %}
+<fieldset class="field">
+  <legend class="form-label">{{ f.text }}{% if f.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</legend>
+  <div class="seg" role="radiogroup" aria-label="{{ f.text }}">
+    <input class="btn-check" type="radio" name="{{ f.name }}" id="{{ f.name }}-yes" value="true" autocomplete="off"{% if f.bool_yes %} checked{% endif %}{% if f.required %} required{% endif %}>
+    <label class="seg-btn" for="{{ f.name }}-yes">Sí</label>
+    <input class="btn-check" type="radio" name="{{ f.name }}" id="{{ f.name }}-no" value="false" autocomplete="off"{% if f.bool_no %} checked{% endif %}{% if f.required %} required{% endif %}>
+    <label class="seg-btn" for="{{ f.name }}-no">No</label>
+  </div>
+  {% if f.help_text %}<div class="field-help">{{ f.help_text }}</div>{% endif %}
+  {% if f.error %}<div class="field-error" role="alert">{{ f.error }}</div>{% endif %}
+</fieldset>

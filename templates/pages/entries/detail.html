@@ -1,0 +1,84 @@
+{% extends "layouts/app_layout.html" %}
+{% load ui %}
+{% block title %}Ingreso #{{ entry.id }}{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <div class="crumbs"><a href="{% url 'entries:list' %}">Histórico</a> / Ingreso #{{ entry.id }}</div>
+      <h1 class="d-flex flex-wrap align-items-center gap-3">Ingreso #{{ entry.id }} {% include "molecules/status_badge.html" with status=entry.status label=entry.status_label variant=entry.status_variant %}</h1>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8 d-grid gap-3 align-content-start">
+      <section class="panel" aria-labelledby="id-title">
+        <div class="panel-head"><h2 id="id-title">Identificación</h2></div>
+        <div class="fact-grid">
+          <div class="fact"><div class="label">Placa</div><div class="value big plate">{{ entry.plate }}</div></div>
+          <div class="fact">
+            <div class="label">Contenedor</div>
+            <div class="value big cont">{% if entry.container_code %}{{ entry.container_code|container_fmt }}{% else %}<span class="text-muted fs-6 fw-normal">Sin contenedor</span>{% endif %}</div>
+          </div>
+          {% if entry.container_code %}
+          <div class="fact">
+            <div class="label">Validación ISO 6346</div>
+            <div class="value">{% if entry.container_iso_valid %}<span class="iso-ok">Válido</span>{% else %}<span class="iso-bad">Inválido</span>{% endif %}</div>
+            {% if entry.iso_expected_digit is not None %}<div class="text-muted small">Dígito leído {{ entry.iso_read_digit }} · esperado {{ entry.iso_expected_digit }}</div>{% endif %}
+          </div>
+          {% endif %}
+          <div class="fact"><div class="label">Fecha y hora</div><div class="value">{{ entry.created_at|date:"d/m/Y H:i" }}</div></div>
+          <div class="fact"><div class="label">Registrado por</div><div class="value">{{ entry.created_by_name }}</div></div>
+        </div>
+        {% if entry.container_code and not entry.container_iso_valid %}
+          <p class="px-3 pb-3 mb-0 text-muted">El operario confirmó el código pese a no pasar la validación; por eso el registro quedó con observación.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel" aria-labelledby="fases-title">
+        <div class="panel-head"><h2 id="fases-title">Fases del registro</h2></div>
+        {% include "organisms/status_timeline.html" with steps=entry.timeline %}
+      </section>
+
+      <section class="panel" aria-labelledby="answers-title">
+        <div class="panel-head"><h2 id="answers-title">Respuestas del formulario</h2></div>
+        <dl class="dl-grid">
+          {% for a in entry.answers %}
+            <div class="row-item"><dt>{{ a.question_text }}</dt><dd>{{ a.display_value }}</dd></div>
+          {% empty %}
+            <div class="panel-body text-muted">Sin respuestas registradas.</div>
+          {% endfor %}
+        </dl>
+      </section>
+
+      <section class="panel" aria-labelledby="evid-title">
+        <div class="panel-head"><h2 id="evid-title">Evidencia fotográfica</h2></div>
+        {% include "organisms/evidence_gallery.html" with evidences=entry.evidences %}
+      </section>
+    </div>
+
+    <aside class="col-lg-4">
+      <section class="panel" aria-labelledby="review-title">
+        <div class="panel-head"><h2 id="review-title">Revisión</h2></div>
+        <div class="panel-body">
+          {% if entry.status == "revisado" %}
+            <p class="mb-2">{% include "atoms/badge.html" with text="Revisado" variant="success" %}</p>
+            <p class="mb-1">Por <strong>{{ entry.reviewed_by_name|default:"—" }}</strong></p>
+            <p class="text-muted small">{{ entry.reviewed_at|date:"d/m/Y H:i" }}</p>
+            {% if entry.review_comment %}<p class="mb-0">{{ entry.review_comment }}</p>{% else %}<p class="text-muted mb-0">Sin comentario.</p>{% endif %}
+          {% elif can_review %}
+            <form method="post" action="{% url 'entries:review' entry.id %}" class="d-grid gap-3">
+              {% csrf_token %}
+              <div class="field">
+                <label class="form-label" for="review-comment">Comentario <span class="text-muted fw-normal">(opcional)</span></label>
+                <textarea class="form-control" id="review-comment" name="comment" rows="3"></textarea>
+              </div>
+              <button class="btn btn-primary w-100" type="submit">Marcar como revisado</button>
+            </form>
+          {% else %}
+            <p class="mb-0 text-muted">Pendiente de revisión por un supervisor.</p>
+          {% endif %}
+        </div>
+      </section>
+    </aside>
+  </div>
+{% endblock %}

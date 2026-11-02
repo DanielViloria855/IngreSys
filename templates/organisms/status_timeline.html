@@ -1,0 +1,9 @@
+{% comment %}Línea de estado: registrado → con observación (si aplica) → revisado. params: steps{% endcomment %}
+<ol class="stepper" aria-label="Fases del registro">
+  {% for s in steps %}
+    <li class="step {{ s.state }}"{% if s.state == "current" %} aria-current="step"{% endif %}>
+      <span class="step-label">{{ s.label }}</span>
+      <span class="step-at">{% if s.at %}{{ s.at|date:"d/m/Y H:i" }}{% elif s.state == "current" %}Estado actual{% else %}Pendiente{% endif %}</span>
+    </li>
+  {% endfor %}
+</ol>

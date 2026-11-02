@@ -1,0 +1,15 @@
+{% extends "layouts/auth_layout.html" %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block content %}
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">Usuario o contraseña incorrectos. Verifique e intente de nuevo.</div>
+  {% endif %}
+
+  <form method="post" class="d-grid gap-3" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% include "molecules/form_field.html" with id="id_username" name="username" label="Usuario" type="text" value=form.username.value required=True autocomplete="username" %}
+    {% include "molecules/form_field.html" with id="id_password" name="password" label="Contraseña" type="password" required=True autocomplete="current-password" %}
+    <button class="btn btn-primary btn-lg w-100" type="submit">Iniciar sesión</button>
+  </form>
+{% endblock %}

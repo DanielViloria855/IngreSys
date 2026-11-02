@@ -1,0 +1,4 @@
+{% comment %}params: kpis (lista ya calculada en la vista){% endcomment %}
+<section class="panel kpi-strip" aria-label="Indicadores del periodo">
+  {% for kpi in kpis %}{% include "molecules/kpi_card.html" with kpi=kpi %}{% endfor %}
+</section>

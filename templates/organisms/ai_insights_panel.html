@@ -1,0 +1,20 @@
+{% comment %}params: insights_url, insights_query, insight_mode{% endcomment %}
+<section class="panel insights-panel" aria-labelledby="insights-title" data-insights data-url="{{ insights_url }}" data-query="{{ insights_query }}">
+  <div class="panel-head">
+    <div>
+      <h2 id="insights-title">Análisis del periodo</h2>
+      <p class="panel-sub">Interpretación automática de los indicadores</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" data-insights-button>Generar análisis</button>
+  </div>
+  <div class="insight-list" data-insights-list aria-live="polite" aria-busy="false">
+    <div class="insights-empty" data-insights-placeholder>
+      <strong>Sin análisis generado</strong>
+      Pulse «Generar análisis» para obtener alertas y observaciones sobre el periodo seleccionado.
+    </div>
+  </div>
+  <div class="insight-meta">
+    <span data-insights-meta>Modo actual: {{ insight_mode }}.</span>
+    Interpretación automática; verifique las cifras antes de decidir. Solo se envían datos agregados, nunca placas ni nombres.
+  </div>
+</section>

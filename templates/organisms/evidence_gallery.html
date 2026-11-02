@@ -1,0 +1,13 @@
+{% comment %}params: evidences (lista de EvidenceDTO){% endcomment %}
+{% if evidences %}
+  <div class="gallery">
+    {% for ev in evidences %}
+      <figure class="thumb">
+        {% include "atoms/image_thumb.html" with url=ev.url alt=ev.kind_label %}
+        <figcaption>{{ ev.kind_label }}{% if ev.question_text %} · {{ ev.question_text }}{% endif %}</figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="panel-body text-muted">Este ingreso no tiene fotos de evidencia.</div>
+{% endif %}

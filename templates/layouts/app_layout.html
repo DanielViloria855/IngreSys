@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% block body %}
+  {% if user.is_authenticated %}{% include "organisms/navbar.html" %}{% endif %}
+  <main id="main" class="app-main container-xl {% block main_class %}{% endblock %}">
+    {% for message in messages %}
+      {% include "molecules/flash_message.html" with level=message.level_tag text=message %}
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+{% endblock %}

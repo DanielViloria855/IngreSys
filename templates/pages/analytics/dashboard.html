@@ -1,0 +1,42 @@
+{% extends "layouts/app_layout.html" %}
+{% load static %}
+{% block title %}Tablero{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Tablero del proceso</h1>
+      <p class="page-sub">{{ metrics.range_label }}{% if metrics.previous %} · comparado con {{ metrics.previous.range_label }}{% endif %}</p>
+    </div>
+    <nav class="seg-nav" aria-label="Periodo">
+      {% for key, label in presets %}{% if key != "custom" %}<a href="?range={{ key }}"{% if preset == key %} class="active" aria-current="true"{% endif %}>{{ label }}</a>{% endif %}{% endfor %}
+      <a href="#custom-range" role="button" data-bs-toggle="collapse" aria-expanded="{% if preset == 'custom' %}true{% else %}false{% endif %}" aria-controls="custom-range"{% if preset == "custom" %} class="active"{% endif %}>Rango</a>
+    </nav>
+  </div>
+
+  <div class="collapse{% if preset == 'custom' %} show{% endif %} mb-3" id="custom-range">
+    <form method="get" class="panel filters" aria-label="Rango personalizado">
+      <input type="hidden" name="range" value="custom">
+      <div class="field"><label class="form-label" for="r-start">Desde</label><input class="form-control" type="date" id="r-start" name="start" value="{{ start }}" required></div>
+      <div class="field"><label class="form-label" for="r-end">Hasta</label><input class="form-control" type="date" id="r-end" name="end" value="{{ end }}" required></div>
+      <button class="btn btn-primary" type="submit">Aplicar</button>
+    </form>
+  </div>
+
+  <div id="dashboard" data-metrics-url="{{ metrics_url }}">
+    {% include "organisms/kpi_grid.html" with kpis=kpis %}
+
+    <div class="row g-3 mt-0">
+      <div class="col-lg-7">{% include "organisms/chart_panel.html" with chart_id="chart-hour" title="Ingresos por hora del día" subtitle="Carga del proceso a lo largo de la jornada" tall=True %}</div>
+      <div class="col-lg-5">{% include "organisms/ai_insights_panel.html" %}</div>
+      <div class="col-lg-7">{% include "organisms/chart_panel.html" with chart_id="chart-day" title="Ingresos por día" subtitle="Evolución en el rango seleccionado" %}</div>
+      <div class="col-lg-5">{% include "organisms/chart_panel.html" with chart_id="chart-status" title="Estado de los registros" subtitle="Registrado, con observación y revisado" %}</div>
+      <div class="col-lg-6">{% include "organisms/chart_panel.html" with chart_id="chart-novelty" title="Novedades por tipo" subtitle="Reportes en el periodo" %}</div>
+      <div class="col-lg-6">{% include "organisms/chart_panel.html" with chart_id="chart-suppliers" title="Principales proveedores" subtitle="Cinco con más ingresos" %}</div>
+    </div>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="{% static 'js/dashboard-charts.js' %}"></script>
+  <script src="{% static 'js/ai-insights.js' %}"></script>
+{% endblock %}

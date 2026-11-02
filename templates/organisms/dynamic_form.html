@@ -1,0 +1,50 @@
+{% comment %}Itera las preguntas e incluye la molécula según question.type. params: fields, error_count, general_error, lost_photos{% endcomment %}
+<form method="post" enctype="multipart/form-data" id="entry-form" data-dynamic-form novalidate>
+  {% csrf_token %}
+
+  {% if general_error %}<div class="alert alert-danger" role="alert">{{ general_error }}</div>{% endif %}
+  {% if error_count %}
+    <div class="alert alert-danger" role="alert" data-form-errors>
+      <strong>Revise {{ error_count }} campo{{ error_count|pluralize }} marcado{{ error_count|pluralize }}.</strong>
+      {% if lost_photos %}Las fotos no se conservan al recargar: vuelva a tomarlas donde haga falta.{% endif %}
+    </div>
+  {% endif %}
+
+  <div class="panel q-list">
+    {% for f in fields %}
+      <section class="q-item{% if f.error %} has-error{% endif %}" data-q-id="{{ f.id }}" data-q-type="{{ f.type }}"
+               {% if f.depends_on_id %}data-depends-on="{{ f.depends_on_id }}" data-depends-value="{{ f.depends_on_value }}"{% endif %}
+               {% if f.required %}data-required{% endif %}{% if f.hidden %} hidden{% endif %}>
+        <div class="q-body">
+          {% if f.type == "text" %}
+            {% include "molecules/form_field.html" with id=f.name name=f.name label=f.text type="text" value=f.value required=f.required help=f.help_text error=f.error autocomplete="off" %}
+          {% elif f.type == "number" %}
+            {% include "molecules/form_field.html" with id=f.name name=f.name label=f.text type="number" value=f.value required=f.required help=f.help_text error=f.error inputmode="decimal" min=0 step="any" %}
+          {% elif f.type == "date" %}
+            {% include "molecules/form_field.html" with id=f.name name=f.name label=f.text type="date" value=f.value required=f.required help=f.help_text error=f.error %}
+          {% elif f.type == "boolean" %}
+            {% include "molecules/boolean_field.html" with f=f %}
+          {% elif f.type == "single_choice" or f.type == "multi_choice" %}
+            {% include "molecules/choice_field.html" with f=f %}
+          {% elif f.type == "photo" %}
+            <div class="field">
+              <span class="form-label d-block">{{ f.text }}{% if f.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</span>
+              {% include "molecules/photo_capture.html" with id=f.photo_name name=f.photo_name cta="Tomar foto" required=f.required %}
+              {% if f.error %}<div class="field-error" role="alert">{{ f.error }}</div>{% endif %}
+            </div>
+          {% elif f.type == "plate_ocr" or f.type == "container_ocr" %}
+            {% include "molecules/ocr_field.html" with f=f %}
+          {% endif %}
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+
+  <div class="form-actions">
+    <span class="form-hint" data-progress-text aria-live="polite">Complete los campos obligatorios</span>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-ghost" href="{% url 'entries:list' %}">Cancelar</a>
+      <button type="submit" class="btn btn-primary btn-lg" data-submit>Registrar ingreso</button>
+    </div>
+  </div>
+</form>

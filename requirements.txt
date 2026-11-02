@@ -1,0 +1,7 @@
+Django>=5.0,<6.0
+django-environ
+Pillow
+google-cloud-vision
+groq
+pytest
+pytest-django

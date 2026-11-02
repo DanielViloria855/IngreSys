@@ -1,0 +1,9 @@
+{% comment %}Cámara trasera + vista previa. params: id, name, cta, required{% endcomment %}
+<div class="photo" data-photo>
+  <input type="file" class="photo-input" id="{{ id }}" name="{{ name }}" accept="image/*" capture="environment"{% if required %} required{% endif %}>
+  <label for="{{ id }}" class="photo-drop">
+    <img class="photo-preview" alt="Vista previa de la foto" hidden>
+    <span class="photo-empty">{{ cta|default:"Tomar foto" }}</span>
+  </label>
+  <span class="photo-name" aria-live="polite"></span>
+</div>

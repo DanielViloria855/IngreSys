@@ -1,0 +1,20 @@
+{% extends "layouts/base.html" %}
+{% block body %}
+  <main id="main" class="auth">
+    <div class="auth-card">
+      <div class="panel">
+        <div class="auth-head">
+          <h1>ingreSys</h1>
+          <p>Control de ingreso de camiones y mercancía</p>
+        </div>
+        <div class="auth-body">
+          {% for message in messages %}
+            {% include "molecules/flash_message.html" with level=message.level_tag text=message %}
+          {% endfor %}
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+      <p class="auth-foot">Tecnológico de Antioquia · Prototipo académico</p>
+    </div>
+  </main>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "layouts/app_layout.html" %}
+{% block title %}Sin permiso{% endblock %}
+{% block content %}
+  <div class="panel empty mx-auto" style="max-width: 560px;">
+    <h2>No tiene permiso para ver esta sección</h2>
+    <p>Su rol no incluye esta función. Si cree que es un error, comuníquese con el administrador.</p>
+    <a class="btn btn-primary" href="{% url 'home' %}">Volver al inicio</a>
+  </div>
+{% endblock %}

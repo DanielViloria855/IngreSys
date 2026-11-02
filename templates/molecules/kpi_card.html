@@ -1,0 +1,9 @@
+{% comment %}Celda de indicador. params: kpi (title, value, tone, hint, delta, delta_dir, delta_tone){% endcomment %}
+<div class="kpi-cell tone-{{ kpi.tone }}">
+  <h3 class="kpi-title">{{ kpi.title }}</h3>
+  <div class="kpi-value">{{ kpi.value }}</div>
+  <div class="kpi-foot">
+    {% if kpi.delta %}<span class="delta delta--{{ kpi.delta_tone }}" title="Frente al periodo anterior">{% if kpi.delta_dir == "up" %}&#9650;{% elif kpi.delta_dir == "down" %}&#9660;{% endif %} {{ kpi.delta }}</span>{% endif %}
+    {% if kpi.hint %}<span>{{ kpi.hint }}</span>{% endif %}
+  </div>
+</div>
