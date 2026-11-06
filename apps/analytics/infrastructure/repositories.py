@@ -5,7 +5,7 @@ from django.db.models import Count, Sum
 from django.db.models.functions import ExtractHour, TruncDate
 from django.utils import timezone
 
-from apps.analytics.application.dtos import ChartPoint, DashboardMetricsDTO, InsightsResult
+from apps.analytics.application.dtos import ChartPoint, DashboardMetricsDTO, InsightsResult, SupplierIssues
 from apps.analytics.application.ports import InsightCache, MetricsRepository
 from apps.analytics.domain.insight import Insight, InsightLevel
 from apps.analytics.domain.metrics import DateRange
@@ -68,6 +68,10 @@ class DjangoMetricsRepository(MetricsRepository):
             novelty_by_type=self._novelty_by_type(entries),
             top_suppliers=self._top_suppliers(answers),
             status_breakdown=self._status_breakdown(entries),
+            supplier_issues=self._supplier_issues(entries, answers),
+            novelty_by_day=self._novelty_by_day(answers, date_range),
+            by_weekday=(weekdays := self._by_weekday(entries)),
+            weekday_average=self._weekday_average(weekdays, date_range),
         )
 
     @staticmethod
@@ -99,6 +103,58 @@ class DjangoMetricsRepository(MetricsRepository):
             .order_by("-n", "value_text")[:5]
         )
         return [ChartPoint(r["value_text"], r["n"]) for r in rows]
+
+    @staticmethod
+    def _novelty_by_day(answers, date_range: DateRange) -> list[ChartPoint]:
+        rows = (
+            answers.filter(question__semantic_tag="has_novelty", value_bool=True)
+            .annotate(d=TruncDate("entry__created_at"))
+            .values("d")
+            .annotate(n=Count("entry", distinct=True))
+        )
+        counts = {r["d"]: r["n"] for r in rows}
+        return [ChartPoint(f"{day:%d/%m}", counts.get(day, 0)) for day in date_range.each_day()]
+
+    @staticmethod
+    def _by_weekday(entries) -> list[ChartPoint]:
+        names = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+        totals = [0] * 7
+        for row in entries.annotate(d=TruncDate("created_at")).values("d").annotate(n=Count("id")):
+            totals[row["d"].weekday()] += row["n"]
+        return [ChartPoint(name, total) for name, total in zip(names, totals)]
+
+    @staticmethod
+    def _weekday_average(totals: list[ChartPoint], date_range: DateRange) -> list[ChartPoint]:
+        """Promedio de ingresos por cada ocurrencia del día de la semana dentro del rango."""
+        occurrences = [0] * 7
+        for day in date_range.each_day():
+            occurrences[day.weekday()] += 1
+        return [
+            ChartPoint(point.label, round(point.value / count, 1) if count else 0)
+            for point, count in zip(totals, occurrences)
+        ]
+
+    @staticmethod
+    def _supplier_issues(entries, answers, min_entries: int = 5, top: int = 5) -> list[SupplierIssues]:
+        """Proveedores con mayor proporción de incidencias (novedad, sello no intacto o ISO inválido)."""
+        supplier_of = dict(answers.filter(question__semantic_tag="supplier").values_list("entry_id", "value_text"))
+        novelty = set(answers.filter(question__semantic_tag="has_novelty", value_bool=True).values_list("entry_id", flat=True))
+        seals = set(answers.filter(question__semantic_tag="seal_ok", value_bool=False).values_list("entry_id", flat=True))
+        iso = set(entries.exclude(container_code="").filter(container_iso_valid=False).values_list("id", flat=True))
+        stats: dict[str, dict[str, int]] = {}
+        for entry_id, name in supplier_of.items():
+            row = stats.setdefault(name, {"entries": 0, "with_issue": 0, "novelty": 0, "seals": 0, "iso": 0})
+            row["entries"] += 1
+            row["novelty"] += entry_id in novelty
+            row["seals"] += entry_id in seals
+            row["iso"] += entry_id in iso
+            row["with_issue"] += entry_id in novelty or entry_id in seals or entry_id in iso
+        ranked = [
+            SupplierIssues(name, r["entries"], r["with_issue"], r["novelty"], r["seals"], r["iso"], round(r["with_issue"] / r["entries"] * 100, 1))
+            for name, r in stats.items() if r["entries"] >= min_entries
+        ]
+        ranked.sort(key=lambda s: (-s.issue_rate_pct, -s.entries))
+        return ranked[:top]
 
     @staticmethod
     def _status_breakdown(entries) -> list[ChartPoint]:

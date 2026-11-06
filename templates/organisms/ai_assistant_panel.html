@@ -1,0 +1,34 @@
+{% comment %}Asistente conversacional sobre las métricas del periodo. params: ask_url, insights_query{% endcomment %}
+<section class="panel" aria-labelledby="assistant-title" data-assistant data-url="{{ ask_url }}" data-query="{{ insights_query }}">
+  <div class="panel-head">
+    <div>
+      <h2 id="assistant-title">Pregunte sobre los datos</h2>
+      <p class="panel-sub">Consulta en lenguaje natural sobre el periodo seleccionado</p>
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" data-assistant-reset hidden>Nueva conversación</button>
+  </div>
+
+  <div class="chat-log" data-assistant-log role="log" aria-live="polite" aria-busy="false">
+    <div class="chat-empty" data-assistant-empty>
+      Escriba una pregunta o elija una sugerencia. El asistente responde solo con las cifras de este periodo y recuerda la conversación.
+    </div>
+  </div>
+
+  <div class="chat-suggestions" aria-label="Preguntas sugeridas">
+    <button type="button" class="btn btn-outline-primary btn-sm" data-assistant-suggestion>¿Qué proveedor tiene más incidencias?</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-assistant-suggestion>¿A qué hora llegan más camiones?</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-assistant-suggestion>¿Cómo van las novedades?</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-assistant-suggestion>Hazme un resumen del periodo</button>
+  </div>
+
+  <form class="chat-form" data-assistant-form autocomplete="off">
+    <label class="visually-hidden" for="assistant-input">Su pregunta</label>
+    <input class="form-control" id="assistant-input" type="text" maxlength="500" placeholder="Ej.: ¿Qué día hubo más novedades?" required>
+    <button class="btn btn-primary" type="submit">Preguntar</button>
+  </form>
+
+  <div class="insight-meta">
+    <span data-assistant-meta>Modo actual: {{ insight_mode }}.</span>
+    Respuesta automática; verifique las cifras antes de decidir. Solo se usan datos agregados: no escriba nombres ni datos personales.
+  </div>
+</section>

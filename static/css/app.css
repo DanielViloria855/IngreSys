@@ -2,7 +2,6 @@
    ingreSys · sistema de diseño (versión corporativa)
    Sobrio y plano: IBM Plex Sans, una sola gama azul, grises neutros, bordes
    de 1 px, radios pequeños, sin sombras decorativas ni animaciones.
-   Fuente de verdad: design-system/ingresys/MASTER.md
    ========================================================================== */
 
 :root {
@@ -268,3 +267,18 @@ textarea.form-control { min-height: 5.5rem; }
   .form-actions { position: static; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* -- Asistente del tablero --------------------------------------------------------------------------------- */
+.chat-log { max-height: 22rem; min-height: 6rem; overflow-y: auto; }
+.chat-empty { padding: 1.25rem; color: var(--c-ink-2); }
+.chat-row { padding: 0.8rem 1.25rem; border-bottom: 1px solid var(--c-line); }
+.chat-row--user { background: var(--c-surface-2); }
+.chat-who { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-ink-2); margin-bottom: 0.15rem; }
+.chat-row--assistant .chat-who { color: var(--c-primary); }
+.chat-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-row.is-pending .chat-text { color: var(--c-ink-2); }
+.chat-row.is-error .chat-text { color: var(--c-danger); }
+.chat-suggestions { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.85rem 1.25rem 0; }
+.chat-form { display: flex; gap: 0.5rem; padding: 0.85rem 1.25rem 1rem; }
+.chat-form .form-control { flex: 1; }
+@media (max-width: 575.98px) { .chat-form { flex-direction: column; } }

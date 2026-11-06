@@ -42,6 +42,16 @@ class RuleBasedInsightAdapter(InsightGenerator):
             found.append(Insight(InsightLevel.WARNING, "Revisiones pendientes",
                                  f"{m.pending_review} de {m.trucks} ingresos aún no se revisan."))
 
+        if m.supplier_issues:
+            worst = m.supplier_issues[0]
+            overall = sum(s.with_issue for s in m.supplier_issues) / max(sum(s.entries for s in m.supplier_issues), 1) * 100
+            if worst.issue_rate_pct >= 35 and worst.issue_rate_pct >= overall * 1.4:
+                found.append(Insight(
+                    InsightLevel.WARNING, f"Proveedor con más incidencias: {worst.supplier}",
+                    f"{worst.with_issue} de {worst.entries} ingresos ({worst.issue_rate_pct:.0f} %) tuvieron novedad, sello no intacto o ISO inválido "
+                    f"(novedades {worst.novelty}, sellos {worst.seals_not_ok}, ISO {worst.iso_invalid}).",
+                ))
+
         peak = max(m.by_hour, key=lambda p: p.value)
         if peak.value > 0:
             found.append(Insight(InsightLevel.INFO, "Hora pico", f"La mayor carga llega hacia las {peak.label} ({int(peak.value)} ingresos)."))

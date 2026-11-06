@@ -1,7 +1,7 @@
 """Aplicación (analytics): puertos."""
 from abc import ABC, abstractmethod
 
-from apps.analytics.application.dtos import DashboardMetricsDTO, InsightsResult
+from apps.analytics.application.dtos import AskQuery, DashboardMetricsDTO, InsightsResult
 from apps.analytics.domain.insight import Insight
 from apps.analytics.domain.metrics import DateRange
 
@@ -34,3 +34,13 @@ class InsightCache(ABC):
     @abstractmethod
     def save(self, range_key: str, metrics_hash: str, result: InsightsResult) -> None:
         """Guarda el resultado."""
+
+
+class AnalyticsAssistant(ABC):
+    """Puerto (aplicación): contrato para responder preguntas en lenguaje natural sobre las métricas."""
+
+    model_name: str = ""
+
+    @abstractmethod
+    def answer(self, query: AskQuery) -> str:
+        """Devuelve la respuesta en texto plano. Lanza AssistantUnavailable si no puede responder."""

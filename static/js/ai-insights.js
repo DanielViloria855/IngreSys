@@ -48,7 +48,7 @@
     var origin = result.fallback_used
       ? "Generado por " + result.model_used + " (la IA no estuvo disponible)"
       : (/^reglas/i.test(result.model_used) ? "Generado por " + result.model_used.toLowerCase() : "Generado por IA · modelo " + result.model_used);
-    meta.textContent = origin + (time ? " · " + time : "") + (result.from_cache ? " · sin cambios desde el último análisis" : "") + ".";
+    meta.textContent = (origin + (time ? " · " + time : "") + (result.from_cache ? " · sin cambios desde el último análisis" : "")).replace(/\.?$/, ".");
   }
 
   button.addEventListener("click", function () {

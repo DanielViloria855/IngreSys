@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.password_validation import validate_password
 
 from apps.accounts.infrastructure.models import Profile
+from apps.core.permissions import ensure_roles
 from apps.core.roles import get_role
 from shared.domain.roles import Role
 
@@ -80,7 +81,8 @@ class StaffForm(forms.Form):
         if data["password"]:
             user.set_password(data["password"])
         user.save()
-        group, _ = Group.objects.get_or_create(name=data["role"])
+        ensure_roles()  # garantiza que el grupo exista con sus permisos
+        group = Group.objects.get(name=data["role"])
         user.groups.set([group])
         Profile.objects.update_or_create(
             user=user,

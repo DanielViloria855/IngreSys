@@ -28,6 +28,7 @@
     <div class="row g-3 mt-0">
       <div class="col-lg-7">{% include "organisms/chart_panel.html" with chart_id="chart-hour" title="Ingresos por hora del día" subtitle="Carga del proceso a lo largo de la jornada" tall=True %}</div>
       <div class="col-lg-5">{% include "organisms/ai_insights_panel.html" %}</div>
+      <div class="col-12">{% include "organisms/ai_assistant_panel.html" %}</div>
       <div class="col-lg-7">{% include "organisms/chart_panel.html" with chart_id="chart-day" title="Ingresos por día" subtitle="Evolución en el rango seleccionado" %}</div>
       <div class="col-lg-5">{% include "organisms/chart_panel.html" with chart_id="chart-status" title="Estado de los registros" subtitle="Registrado, con observación y revisado" %}</div>
       <div class="col-lg-6">{% include "organisms/chart_panel.html" with chart_id="chart-novelty" title="Novedades por tipo" subtitle="Reportes en el periodo" %}</div>
@@ -39,4 +40,5 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="{% static 'js/dashboard-charts.js' %}"></script>
   <script src="{% static 'js/ai-insights.js' %}"></script>
+  <script src="{% static 'js/ai-assistant.js' %}"></script>
 {% endblock %}

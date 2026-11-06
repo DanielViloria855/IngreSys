@@ -146,3 +146,13 @@ def test_date_range_previous_and_validation():
     assert r.days == 7 and r.previous().end.isoformat() == "2026-11-01" and r.previous().days == 7
     with pytest.raises(Exception):
         DateRange.from_preset("custom", datetime(2026, 11, 8).date(), "2026-11-09", "2026-11-01")
+
+
+def test_rule_based_flags_supplier_with_many_issues():
+    from apps.analytics.application.dtos import SupplierIssues
+
+    issues = [SupplierIssues("Frontera Cargo", 20, 12, 7, 5, 3, 60.0), SupplierIssues("Otro", 20, 3, 2, 1, 0, 15.0)]
+    found = RuleBasedInsightAdapter().generate(metrics(supplier_issues=issues))
+    assert any("Frontera Cargo" in i.title for i in found)
+    calm = [SupplierIssues("A", 20, 5, 3, 1, 1, 25.0), SupplierIssues("B", 20, 4, 3, 1, 0, 20.0)]
+    assert not any("Proveedor" in i.title for i in RuleBasedInsightAdapter().generate(metrics(supplier_issues=calm)))

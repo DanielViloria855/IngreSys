@@ -205,3 +205,64 @@ def test_admin_creates_and_deactivates_staff(client, admin_user):
     assert user.is_active is False
     self_edit = dict(data, username="adm", is_active="", role="Administrador")
     assert client.post(reverse("staff:edit", args=[admin_user.id]), self_edit).status_code == 200  # no puede desactivarse
+
+
+def test_admin_role_can_edit_questionnaire_in_django_admin(client, admin_user):
+    """Regresión: el rol Administrador (no superusuario) debe ver y editar el cuestionario en /admin/."""
+    assert admin_user.is_staff is False  # make_user no marca is_staff; lo hace StaffForm / seed
+    admin_user.is_staff = True
+    admin_user.save()
+    client.force_login(admin_user)
+    for name in ("questionnaire_questionnaire_changelist", "questionnaire_question_changelist"):
+        assert client.get(reverse(f"admin:{name}")).status_code == 200
+    assert client.get(reverse("admin:questionnaire_question_add")).status_code == 200
+    assert "Cuestionario dinámico" in client.get(reverse("admin:index")).content.decode()
+
+
+def test_supervisor_cannot_edit_questionnaire(client, supervisor):
+    supervisor.is_staff = True
+    supervisor.save()
+    client.force_login(supervisor)
+    assert client.get(reverse("admin:questionnaire_question_changelist")).status_code == 403
+
+
+# -- asistente del tablero ------------------------------------------------------------------------------
+def _ask(client, payload):
+    import json
+
+    return client.post(reverse("analytics:ask"), data=json.dumps(payload), content_type="application/json")
+
+
+def test_ask_endpoint_answers_with_rules_and_keeps_roles(client, supervisor, operator):
+    register(operator, has_novelty="true", novelty_type=["pests"], novelty_description="x")
+    client.force_login(operator)
+    assert _ask(client, {"question": "hola"}).status_code == 403
+    client.force_login(supervisor)
+    body = _ask(client, {"question": "¿Cómo van las novedades?", "range": "today"}).json()
+    assert "novedad" in body["answer"] and body["model_used"] == "Reglas automáticas" and body["fallback_used"] is False
+    follow = _ask(client, {"question": "¿y el resumen?", "range": "today",
+                           "history": [{"role": "user", "text": "hola"}, {"role": "assistant", "text": "buenas"}, {"role": "x", "text": "ignorado"}]})
+    assert follow.status_code == 200
+
+
+def test_ask_endpoint_validations_and_throttle(client, supervisor, settings):
+    client.force_login(supervisor)
+    assert _ask(client, {"question": "  "}).status_code == 400
+    assert _ask(client, {"question": "x" * 600}).status_code == 400
+    assert _ask(client, {"question": "ok", "range": "custom", "start": "2026-02-01", "end": "2026-01-01"}).status_code == 400
+    assert client.post(reverse("analytics:ask"), data="no es json", content_type="application/json").status_code == 400
+    from apps.analytics.infrastructure import views
+
+    for _ in range(views.ASK_LIMIT):
+        _ask(client, {"question": "resumen"})
+    assert _ask(client, {"question": "resumen"}).status_code == 429
+
+
+def test_ask_endpoint_gives_assistant_history_and_tomorrow_estimate(client, supervisor, operator):
+    register(operator)
+    client.force_login(supervisor)
+    body = _ask(client, {"question": "¿Mañana será un día de mucho volumen?", "range": "today"}).json()
+    # el endpoint le entrega la fecha y el historial de 30 días: responde sobre «mañana» y cita ese historial
+    assert "Mañana es" in body["answer"] and "últimos 30 días" in body["answer"]
+    recommend = _ask(client, {"question": "¿Qué me recomiendas hacer?", "range": "today"}).json()
+    assert "Sugerencias" in recommend["answer"] or "mantener la operación" in recommend["answer"]

@@ -1,7 +1,9 @@
 """Infraestructura (adaptadores primarios) de analytics: tablero y endpoints JSON."""
+import json
 from urllib.parse import urlencode
 
 from django.contrib import messages
+from django.core.cache import cache
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -9,7 +11,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 
-from apps.analytics.application.dtos import DashboardMetricsDTO
+from apps.analytics.application.dtos import AskQuery, DashboardMetricsDTO
+from apps.analytics.domain.assistant import ChatRole, ChatTurn, InvalidQuestion
 from apps.analytics.domain.metrics import PRESETS, DateRange, InvalidDateRange
 from apps.analytics.infrastructure import container
 from apps.core.mixins import RoleRequiredMixin
@@ -90,6 +93,7 @@ class DashboardView(AnalyticsAccessMixin, View):
             "end": date_range.end.isoformat(),
             "metrics_url": f"{reverse('analytics:metrics')}?{urlencode(query)}",
             "insights_url": reverse("analytics:insights"),
+            "ask_url": reverse("analytics:ask"),
             "insights_query": urlencode(query),
             "insight_mode": "IA (Groq)" if container.get_insight_generator().model_name.startswith("Groq") else "reglas automáticas",
         }
@@ -113,4 +117,47 @@ class InsightsView(AnalyticsAccessMixin, View):
             return JsonResponse({"error": error}, status=400)
         metrics = container.get_dashboard_metrics().execute(date_range)
         result = container.generate_ai_insights().execute(metrics)
+        return JsonResponse(result.to_dict())
+
+
+ASK_LIMIT = 20  # preguntas por usuario...
+ASK_WINDOW_SECONDS = 600  # ...cada 10 minutos (protege la cuota del plan gratuito del LLM)
+MAX_HISTORY_TEXT = 1500
+
+
+class AskView(AnalyticsAccessMixin, View):
+    """POST JSON: responde una pregunta sobre las métricas del periodo (con memoria de la conversación)."""
+
+    def post(self, request):
+        try:
+            payload = json.loads(request.body or b"{}")
+            if not isinstance(payload, dict):
+                raise ValueError
+        except ValueError:
+            return JsonResponse({"error": "Solicitud inválida."}, status=400)
+
+        key = f"ask-throttle:{request.user.id}"
+        cache.add(key, 0, ASK_WINDOW_SECONDS)
+        if cache.incr(key) > ASK_LIMIT:
+            return JsonResponse({"error": "Demasiadas preguntas seguidas. Espere unos minutos e intente de nuevo."}, status=429)
+
+        _, date_range, error = _parse_range(payload)
+        if error:
+            return JsonResponse({"error": error}, status=400)
+
+        history = []
+        for turn in payload.get("history") or []:
+            if isinstance(turn, dict) and turn.get("role") in (ChatRole.USER.value, ChatRole.ASSISTANT.value):
+                history.append(ChatTurn(ChatRole(turn["role"]), str(turn.get("text", ""))[:MAX_HISTORY_TEXT]))
+
+        today = timezone.localdate()
+        metrics = container.get_dashboard_metrics().execute(date_range)
+        # Contexto histórico: si el periodo es corto, el asistente también ve los últimos 30 días (patrones, estimaciones).
+        reference = container.get_dashboard_metrics().execute(DateRange.from_preset("30d", today)) if date_range.days < 28 else None
+        try:
+            result = container.ask_analytics_question().execute(
+                AskQuery(str(payload.get("question", "")), metrics, tuple(history), reference, today)
+            )
+        except InvalidQuestion as exc:
+            return JsonResponse({"error": str(exc)}, status=400)
         return JsonResponse(result.to_dict())

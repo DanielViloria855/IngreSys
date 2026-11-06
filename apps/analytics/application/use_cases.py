@@ -5,8 +5,9 @@ from dataclasses import replace
 from datetime import datetime, timezone
 from typing import Callable
 
-from apps.analytics.application.dtos import DashboardMetricsDTO, InsightsResult
-from apps.analytics.application.ports import InsightCache, InsightGenerator, MetricsRepository
+from apps.analytics.application.dtos import AnswerResult, AskQuery, DashboardMetricsDTO, InsightsResult
+from apps.analytics.application.ports import AnalyticsAssistant, InsightCache, InsightGenerator, MetricsRepository
+from apps.analytics.domain.assistant import AssistantUnavailable, InvalidQuestion
 from apps.analytics.domain.insight import InsightUnavailable
 from apps.analytics.domain.metrics import DateRange
 from shared.application.base import BaseUseCase
@@ -75,3 +76,32 @@ class GenerateAIInsights(BaseUseCase[DashboardMetricsDTO, InsightsResult]):
             insights = self._fallback.generate(metrics)
             result = InsightsResult(insights, self._fallback.model_name, self._clock(), fallback_used=True)
         return result
+
+
+MAX_QUESTION_CHARS = 500
+MAX_HISTORY_TURNS = 6
+
+
+class AskAnalyticsQuestion(BaseUseCase[AskQuery, AnswerResult]):
+    """Caso de uso (aplicación): responde una pregunta sobre las métricas del periodo.
+
+    Valida la pregunta, recorta la conversación a los últimos turnos, intenta con el asistente
+    principal (LLM) y, si lanza AssistantUnavailable, responde con el de respaldo (reglas).
+    """
+
+    def __init__(self, primary: AnalyticsAssistant, fallback: AnalyticsAssistant, clock: Callable[[], datetime] | None = None):
+        self._primary = primary
+        self._fallback = fallback
+        self._clock = clock or (lambda: datetime.now(timezone.utc))
+
+    def execute(self, query: AskQuery) -> AnswerResult:
+        question = query.question.strip()
+        if not question:
+            raise InvalidQuestion("Escriba una pregunta.")
+        if len(question) > MAX_QUESTION_CHARS:
+            raise InvalidQuestion(f"La pregunta supera los {MAX_QUESTION_CHARS} caracteres.")
+        clean = replace(query, question=question, history=tuple(query.history[-MAX_HISTORY_TURNS:]))
+        try:
+            return AnswerResult(self._primary.answer(clean), self._primary.model_name, self._clock())
+        except AssistantUnavailable:
+            return AnswerResult(self._fallback.answer(clean), self._fallback.model_name, self._clock(), fallback_used=True)
